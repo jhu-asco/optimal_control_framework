@@ -6,3 +6,6 @@ This project is a simple framework for specifying dynamics and jacobians of dyna
 - integrators : Integrators take in dynamics, x0, and find the state at specified times ts (Supports controllers)
 - costs       : Cost function provides stage-wise and terminal costs along a trajectory
 - sampling    : Samples a specified number of trajectories using a specified integrator, controller, and provides the costs, states and controls for the sampled trajectories
+
+# Testing
+To test the repo, use `nose2 -v` in the main folder of the project
