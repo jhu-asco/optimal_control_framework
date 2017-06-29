@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from dynamics.linear_dynamics import LinearDynamics
-from controllers.feedforward_controller import FeedforwardController
-from integrators.euler_integrator import EulerIntegrator
+from optimal_control_framework.dynamics import LinearDynamics
+from optimal_control_framework.controllers import FeedforwardController
+from optimal_control_framework.integrators import EulerIntegrator
 import numpy as np
 import numpy.testing as np_testing
 

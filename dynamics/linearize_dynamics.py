@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from abstract_dynamics import AbstractDynamicSystem
+from optimal_control_framework.dynamics import AbstractDynamicSystem
 import numpy as np
 
 class LinearizeDynamics:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from abstract_controller import AbstractController
+from optimal_control_framework.controllers import AbstractController
 import numpy as np
 
 class LinearController(AbstractController):
@@ -19,7 +19,7 @@ class LinearController(AbstractController):
     self.ks = ks
     self.Sigmas = Sigmas
 
-  def deterministic_control(self, i, t, x):
+  def deterministic_control(self, i, x):
     """
     Compute the control to be sent based on inputs
     Parameters:
@@ -29,7 +29,7 @@ class LinearController(AbstractController):
     """
     return np.matmul(x, self.Ks[i]) + self.ks[i]
 
-  def control(self, i, t, x):
+  def control(self, i, x):
     noise = np.random.multivariate_normal(np.zeros(self.dynamics.m),
                                           np.diag(self.Sigmas[i]))
-    return self.deterministic_control(i,t,x) + noise
+    return self.deterministic_control(i,x) + noise

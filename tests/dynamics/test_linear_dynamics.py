@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from dynamics.linear_dynamics import LinearDynamics
+from optimal_control_framework.dynamics import LinearDynamics
 import unittest
 import numpy as np
 import numpy.testing as np_testing

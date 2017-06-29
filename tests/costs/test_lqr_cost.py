@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from costs.lqr_cost import LQRCost
+from optimal_control_framework.costs import LQRCost
 import unittest
 import numpy as np
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from abstract_controller import AbstractController
+from optimal_control_framework.controllers import AbstractController
 import numpy as np
 
 class FeedforwardController(AbstractController):

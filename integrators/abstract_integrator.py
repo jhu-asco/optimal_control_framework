@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from abc import ABCMeta, abstractmethod
-from dynamics.abstract_dynamics import AbstractDynamicSystem
+from optimal_control_framework.dynamics import AbstractDynamicSystem
 
 class AbstractIntegrator(object):
   __metaclass__ = ABCMeta

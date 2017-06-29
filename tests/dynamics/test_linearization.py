@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from dynamics.linear_dynamics import LinearDynamics
-from dynamics.linearize_dynamics import LinearizeDynamics
-from controllers.feedforward_controller import FeedforwardController
+from optimal_control_framework.dynamics import (LinearDynamics,
+                                                LinearizeDynamics)
+from optimal_control_framework.controllers import FeedforwardController
 import numpy as np
 import numpy.testing as np_testing
 

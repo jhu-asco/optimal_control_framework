@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from integrators.abstract_integrator import AbstractIntegrator
-from costs.abstract_cost import AbstractCost
-from dynamics.abstract_dynamics import AbstractDynamicSystem
+from optimal_control_framework.integrators import AbstractIntegrator
+from optimal_control_framework.costs import AbstractCost
+from optimal_control_framework.dynamics import AbstractDynamicSystem
 import numpy as np
 
 """

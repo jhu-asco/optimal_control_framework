@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from abc import ABCMeta, abstractmethod
-from dynamics.abstract_dynamics import AbstractDynamicSystem
+from optimal_control_framework.dynamics import AbstractDynamicSystem
 
 class AbstractController(object):
   __metaclass__ = ABCMeta
@@ -16,8 +16,7 @@ class AbstractController(object):
     """
     self.dynamics = dynamics
     self.discrete = discrete
-
-    assert(isinstance(self.dynamics, AbstractDynamicSystem))
+    assert(isinstance(dynamics, AbstractDynamicSystem))
 
   def control(self, i, x):
     """

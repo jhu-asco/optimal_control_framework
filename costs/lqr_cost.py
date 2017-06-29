@@ -1,4 +1,4 @@
-from abstract_cost import AbstractCost
+from optimal_control_framework.costs import AbstractCost
 import numpy as np
 
 class LQRCost(AbstractCost):

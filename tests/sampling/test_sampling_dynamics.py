@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from sampling.sampling_dynamics import SampleTrajectories
-from dynamics.linear_dynamics import LinearDynamics
-from controllers.feedforward_controller import FeedforwardController
-from integrators.euler_integrator import EulerIntegrator
-from costs.lqr_cost import LQRCost
+from optimal_control_framework.sampling import SampleTrajectories
+from optimal_control_framework.dynamics import LinearDynamics
+from optimal_control_framework.controllers import FeedforwardController
+from optimal_control_framework.integrators import EulerIntegrator
+from optimal_control_framework.costs import LQRCost
 import numpy as np
 import numpy.testing as np_testing
 
@@ -35,7 +35,6 @@ def testSampling():
                                            x0_sampling_fun)
   # Sample M trajectories
   xss, uss, Jss = sample_trajectories.sample(M, ts, controller)
-  print xss.shape
   assert(xss.shape == (M, N+1, n))
   assert(uss.shape == (M, N, m))
   assert(Jss.shape == (M, N))

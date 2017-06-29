@@ -1,4 +1,4 @@
-from abstract_dynamics import AbstractDynamicSystem
+from optimal_control_framework.dynamics import AbstractDynamicSystem
 import casadi as cs
 import numpy as np
 
