@@ -13,7 +13,10 @@ class EulerIntegrator(AbstractIntegrator):
     xs[0] = x0;
     for i, t in enumerate(ts[:-1]):
       dt = ts[i+1] - t
-      us[i] = controller.control(i, ts[i], xs[i])
+      if controller.discrete:
+        us[i] = controller.control(i, xs[i])
+      else:
+        us[i] = controller.control(ts[i], xs[i])
       ws = ws_sample_fun(i, ts[i])
       xs[i+1] = xs[i] + dt*self.dynamics.xdot(t, xs[i], us[i], ws)
     return [xs, us]

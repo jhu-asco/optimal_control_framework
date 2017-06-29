@@ -12,8 +12,9 @@ class FeedforwardController(AbstractController):
     ks       -- Feedforward controls as [Nxm] matrix
     """
     self.us = us
+    self.discrete = True
 
-  def deterministic_control(self, i, t, x):
+  def deterministic_control(self, i, x):
     """
     Compute the control to be sent based on inputs
     Parameters:

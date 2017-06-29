@@ -34,7 +34,10 @@ class LinearizeDynamics:
     # Linearize
     for i, t in enumerate(ts[:-1]):
       dt = ts[i+1] - t
-      control = controller.deterministic_control(i, ts[i], xtemp)
+      if controller.discrete:
+        control = controller.deterministic_control(i, xtemp)
+      else:
+        control = controller.deterministic_control(ts[i], xtemp)
       jac = self.dynamics.jacobian(t, xtemp, control, wbar_fun(i))
       xtemp = xtemp + dt*self.dynamics.xdot(t, xtemp, control, wbar_fun(i))
       As.append(np.eye(self.dynamics.n) + jac[0]*dt)
