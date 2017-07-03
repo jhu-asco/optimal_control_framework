@@ -24,7 +24,8 @@ class LinearController(AbstractController):
     Compute the control to be sent based on inputs
     Parameters:
     i   -- Index along trajectory for discrete controllers
-    t   -- Time along trajectory for continous controllers
+           It can also be  time along trajectory for continous
+           controllers
     x   -- Current state
     """
     return np.matmul(x, self.Ks[i]) + self.ks[i]
