@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from optimal_control_framework.integrators import AbstractIntegrator
-from optimal_control_framework.controllers import AbstractController
 import numpy as np
 
 class EulerIntegrator(AbstractIntegrator):

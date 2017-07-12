@@ -8,7 +8,8 @@ This project is a simple framework for specifying dynamics and jacobians of dyna
 - sampling    : Samples a specified number of trajectories using a specified integrator, controller, and provides the costs, states and controls for the sampled trajectories
 
 # Installing Module
-To install module, either copy the folder to a folder in python path or extend the the python path using bashrc to include the parent folder containing this module
+To install module, either copy the folder to a folder in python path or extend the the python path using bashrc to include the parent folder containing this module.
+You also need to install casadi using `pip install casadi`
 
 # Testing
 To test the repo, use `nose2 -v` in the main folder of the project. The python path should be extended before running tests

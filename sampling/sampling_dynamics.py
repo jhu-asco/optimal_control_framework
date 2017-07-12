@@ -35,9 +35,13 @@ class SampleTrajectories:
     """
     ncol = 2
     n = vector_inp.shape[1]
-    nrow = int(n/ncol)
-    if nrow*ncol != n:
-      nrow += 1
+    if n  <= ncol:
+        nrow = 1
+        ncol = n
+    else:
+        nrow = int(n/ncol)
+        if nrow*ncol != n:
+          nrow += 1
     # Plot vector
     plt.figure(figure_id)
     for i in range(0, n):
