@@ -32,8 +32,8 @@ class AbstractCost(object):
     """
     N = len(us)
     Js = np.empty([N,])
-    cumulative_cost = self.terminal_cost(xs[N-1])
-    
+    cumulative_cost = self.terminal_cost(xs[N])
+
     for i in range(N-1,-1,-1):
       cumulative_cost += self.stagewise_cost(i, xs[i],us[i])
       Js[i] = cumulative_cost

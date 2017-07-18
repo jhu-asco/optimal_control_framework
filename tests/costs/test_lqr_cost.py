@@ -25,3 +25,18 @@ class TestLQRCost(unittest.TestCase):
     self.assertEqual(len(Js), self.N)
     self.assertEqual(Js[-1], 14.0)
     self.assertTrue(Js[0] >= Js[-1])
+
+  def test_cumulative_cost_different_terminal_state(self):
+    """
+    Regression Test to ensure the cost is using the last state for terminal cost!
+    """
+    xs = np.zeros([self.N+1, self.n])
+    us = np.zeros([self.N, self.n])
+    # Set the terminal state to ones
+    xs[self.N] = np.ones([self.n])
+    # Evaluate costs
+    Js = self.cost.cumulative_cost(xs, us)
+    # Last one is terminal cost
+    self.assertEqual(Js[-1], 10.0)
+    # Since other costs are 0
+    self.assertTrue(Js[0] == Js[-1])
