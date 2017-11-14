@@ -9,7 +9,9 @@ This project is a simple framework for specifying dynamics and jacobians of dyna
 
 # Installing Module
 To install module, either copy the folder to a folder in python path or extend the the python path using bashrc to include the parent folder containing this module.
-You also need to install casadi using `pip install casadi`
+You also need to install
+1. Casadi using `pip install casadi`
+2. Transforms3d using `pip install transforms3d`
 
 # Testing
 To test the repo, use `nose2 -v` in the main folder of the project. The python path should be extended before running tests
