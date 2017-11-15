@@ -29,5 +29,11 @@ class UnicycleController(AbstractController):
         current_dirxn = np.array([np.cos(x[2]), np.sin(x[2])])
         v = np.dot(edot_desired, current_dirxn)
         theta_desired = np.arctan2(edot_desired[1], edot_desired[0])
-        thetadot = -1*self._gains[1]*(x[2] - theta_desired)
-        return np.array([v, theta_desired])
+        theta_corrected = np.remainder(x[2], 2*np.pi)
+        e_theta = (theta_corrected - theta_desired)
+        if e_theta > np.pi:
+            e_theta = e_theta - 2*np.pi
+        elif e_theta < -np.pi:
+            e_theta = e_theta + 2*np.pi
+        thetadot = -1*self._gains[1]*e_theta
+        return np.array([v, thetadot])
