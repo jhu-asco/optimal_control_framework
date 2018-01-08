@@ -11,7 +11,7 @@ class UnicycleController(AbstractController):
         """
         Set goal x, y positions
         """
-        self._xd = xd
+        self._xd = xd[:2]
 
     def setGains(self, gains):
         """

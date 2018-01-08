@@ -2,3 +2,4 @@ from abstract_controller import AbstractController
 from feedforward_controller import FeedforwardController
 from linear_controller import LinearController
 from unicycle_controller import UnicycleController
+from acc_unicycle_controller import AccUnicycleController
