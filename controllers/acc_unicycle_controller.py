@@ -7,7 +7,8 @@ class AccUnicycleController(AbstractController):
     _xd = np.array([0, 0, 0, 0])
     # kp, kd
     _gains = np.array([1,1])
-    max_thetadot = np.pi/2
+    max_thetadot = np.pi/10
+    tol = 1e-4
 
     def setGoal(self, xd):
         """
@@ -30,7 +31,9 @@ class AccUnicycleController(AbstractController):
         theta = x[2]
         return np.array([[np.cos(theta), -np.sin(theta)],
                          [np.sin(theta), np.cos(theta)]])
-
+    def inverseSpeed(self, x):
+        v = x[3]
+        return v/(v*v + self.tol)
     def deterministic_control(self, i, x):
         """
         Compute the velocity and angular velocity
@@ -45,13 +48,8 @@ class AccUnicycleController(AbstractController):
         u = np.dot(rotation.T, eddot_desired)
         #print "u: ", u
         # Convert v thetadot to thetadot
-        v = x[3]
-        #print "v: ", v
-        #sys.exit(-1)
-        #if np.abs(v) < u[1]/self.max_thetadot:
-        #    u[1] = np.sign(v)*self.max_thetadot
-        #else:
-        u_prev = u[1]
-        u[1] = u[1]/v
+        u[1] = u[1]*self.inverseSpeed(x)
+        if np.abs(u[1]) > self.max_thetadot:
+            u[1] = np.sign(u[1])*self.max_thetadot
         #print "e_v: ", e_v, "e_p: ", e_p, "ed: ", eddot_desired, "u: ", u, "v: ", v, "u_p: ", u_prev
         return u
