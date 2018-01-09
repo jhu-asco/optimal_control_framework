@@ -7,8 +7,12 @@ class AccUnicycleController(AbstractController):
     _xd = np.array([0, 0, 0, 0, 0, 0])
     # kp, kd
     _gains = np.array([1,1])
-    max_thetadot = np.pi/2
-    tol = 1e-4
+    _tol = 1e-4
+
+    def __init__(self, dynamics):
+      super(AccUnicycleController, self).__init__(dynamics)
+      self.m = 2  # Feedforward trajectory pddot
+      self.max_thetadot = np.pi/2
 
     def setGoal(self, xd, pddot=np.zeros(2)):
         """
@@ -35,7 +39,7 @@ class AccUnicycleController(AbstractController):
                          [np.sin(theta), np.cos(theta)]])
     def inverseSpeed(self, x):
         v = x[3]
-        return v/(v*v + self.tol)
+        return v/(v*v + self._tol)
 
     def deterministic_control(self, i, x):
         """

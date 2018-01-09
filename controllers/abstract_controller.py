@@ -16,6 +16,7 @@ class AbstractController(object):
     """
     self.dynamics = dynamics
     self.discrete = discrete
+    self.m = self.dynamics.m
     assert(isinstance(dynamics, AbstractDynamicSystem))
 
   def control(self, i, x):
