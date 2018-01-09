@@ -25,7 +25,9 @@ class TestAccUnicycleController(unittest.TestCase):
   def testControlValue(self):
     # x, y, theta, v
     x = np.array([1, 1, -1, 3])
-    self.controller.setGoal(np.array([1, 0, 0, -2]))
+    xd = np.array([1, 0, 0, 3])
+    self.controller.setGoal(xd)
+    self.controller.setGains([0.1, 0.1])
     # Check double derivative
     dt = 0.0001
     u = self.controller.control(0, x)
@@ -36,21 +38,19 @@ class TestAccUnicycleController(unittest.TestCase):
     # Check xddot , yddot from discrete differentiation
     p = x1[:2]
     pdot = self.controller.getVelocity(x1)
-    pd = self.controller._xd[:2]
-    pd_dot = self.controller.getVelocity(self.controller._xd)
+    pd = xd[:2]
+    pd_dot = self.controller.getVelocity(xd)
     pddot_expected = -1*self.controller._gains[0]*(p-pd) -1*self.controller._gains[1]*(pdot - pd_dot)
     np_testing.assert_allclose(pddot_expected, xddot_1[:2], atol=1e-3)
 
 
   def testControl(self):
-    self.controller.setGains(np.array([5, 5]))
+    self.controller.setGains(np.array([10, 10]))
     #x0 = -1*np.ones(self.n)
     x0 = -1*np.ones(self.n)
     x0[2] = 1
     x0[3] = 1
     xd = np.array([0, 0, 0, 0.1])
-    u_ff = np.array([0, 0])
-    self.controller.setGoal(xd)
     max_iters = 1000
     iters = 0
     converged = False
@@ -61,15 +61,16 @@ class TestAccUnicycleController(unittest.TestCase):
     xs = []
     ts = []
     while iters < max_iters:
+        pddot = np.array([np.cos((float(iters)/max_iters)*np.pi), np.cos((float(iters)/max_iters)*np.pi)])
+        self.controller.setGoal(xd, pddot)
         iters = iters+1
-        u = u_ff + self.controller.control(t, x)
+        u = self.controller.control(t, x)
         xdot = self.unicycle_dynamics.xdot(t, x, u, np.zeros(self.n))
-        ud = u_ff + self.controller.control(t, xd)
+        ud = self.controller.control(t, xd)
         xd_dot =self.unicycle_dynamics.xdot(t, xd, ud, np.zeros(self.n))
         x = x + xdot*dt
         xd = xd + xd_dot*dt
         t = t + dt
-        self.controller.setGoal(xd)
         xd_s.append(xd)
         xs.append(x)
         ts.append(t)
@@ -92,10 +93,10 @@ class TestAccUnicycleController(unittest.TestCase):
         theta[inds_theta_greater] = theta[inds_theta_greater] - 2*np.pi
         theta[inds_theta_smaller] = theta[inds_theta_smaller] + 2*np.pi
         plt.plot(ts, theta, 'r')
-        theta_d = self.controller._xd[2]*np.ones_like(ts)
+        theta_d = xd[2]*np.ones_like(ts)
         plt.plot(ts, theta_d, 'b')
         plt.subplot(2,2,4)
-        vd = np.ones_like(ts)*self.controller._xd[3]
+        vd = np.ones_like(ts)*xd[3]
         plt.plot(ts, xs[:,3], 'r')
         plt.plot(ts, vd, 'b')
         plt.show(block=True)

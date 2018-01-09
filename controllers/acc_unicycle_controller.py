@@ -3,18 +3,20 @@ import numpy as np
 import sys
 
 class AccUnicycleController(AbstractController):
-    # Goal
-    _xd = np.array([0, 0, 0, 0])
+    # Goal (p, pdot, pddot)
+    _xd = np.array([0, 0, 0, 0, 0, 0])
     # kp, kd
     _gains = np.array([1,1])
-    max_thetadot = np.pi/10
+    max_thetadot = np.pi/2
     tol = 1e-4
 
-    def setGoal(self, xd):
+    def setGoal(self, xd, pddot=np.zeros(2)):
         """
         Set goal x, y positions
         """
-        self._xd = xd[:4]
+        p = xd[:2]
+        pdot = self.getVelocity(xd)
+        self._xd = np.hstack([p, pdot, pddot])
 
     def setGains(self, gains):
         """
@@ -34,14 +36,15 @@ class AccUnicycleController(AbstractController):
     def inverseSpeed(self, x):
         v = x[3]
         return v/(v*v + self.tol)
+
     def deterministic_control(self, i, x):
         """
         Compute the velocity and angular velocity
         to get to a desired goal
         """
         e_p = (x[:2] - self._xd[:2])
-        e_v = (self.getVelocity(x) - self.getVelocity(self._xd))
-        eddot_desired = -1*self._gains[0]*e_p - 1*self._gains[1]*e_v
+        e_v = (self.getVelocity(x) - self._xd[2:4])
+        eddot_desired = self._xd[4:]-1*self._gains[0]*e_p - 1*self._gains[1]*e_v
         #print "eddot_desired: ", eddot_desired
         rotation = self.getRotation(x)
         #print "rotation: ", rotation
