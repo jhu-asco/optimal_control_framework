@@ -12,7 +12,7 @@ To install module, either copy the folder to a folder in python path or extend t
 You also need to install
 1. Casadi using `pip install casadi`
 2. Transforms3d using `pip install transforms3d`
-3. Slycot and controls using `pip install slycot control`
+3. Slycot and controls using `pip install slycot control` (Install gfortran on Ubuntu)
 
 # Testing
 To test the repo, use `nose2 -v` in the main folder of the project. The python path should be extended before running tests

@@ -16,7 +16,7 @@ class QuadrotorDynamics(AbstractDynamicSystem):
         self.m = 4
         self.mass = mass
         self.J = J
-        self.g = g
+        self.g = np.array(g)
 
     def omegaToRpyDot(self, rpy, omega):
         secant_pitch= (1.0/np.cos(rpy[1]))
@@ -39,7 +39,7 @@ class QuadrotorDynamics(AbstractDynamicSystem):
         e3 = np.array([0, 0, 1])
         v = x[3:6]
         rpy = x[6:9]
-        R = euler2mat(rpy[0], rpy[1], rpy[2], 'rzyx')
+        R = euler2mat(rpy[2], rpy[1], rpy[0], 'rzyx')
         omega = x[9:12]
         J_omega_dot = np.cross(np.dot(self.J, omega), omega) + tau
         thrust_vec = np.dot(R, e3)
