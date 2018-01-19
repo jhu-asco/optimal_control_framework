@@ -11,8 +11,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from transforms3d.euler import mat2euler, euler2mat
 
 def getTrajectoryState(t, dynamics, controller):
-    pd = np.array([np.cos(t), np.sin(t), 0])
-    vd = np.array([-np.sin(t), np.cos(t), 0])
+    pd = np.array([np.cos(t), np.sin(t), 0.01*t])
+    vd = np.array([-np.sin(t), np.cos(t), 0.01])
     ad = np.array([-np.cos(t), -np.sin(t), 0])
     jerk_d = np.array([np.sin(t), -np.cos(t), 0])
     snap_d = np.array([np.cos(t), np.sin(t), 0])
@@ -33,7 +33,8 @@ def getTrajectoryState(t, dynamics, controller):
 
 class TestBacksteppingController(unittest.TestCase):
     def setUp(self):
-        self.dynamics = QuadrotorDynamicsExt()
+        self.dynamics = QuadrotorDynamicsExt(mass=1.0)
+        #self.dynamics = QuadrotorDynamicsExt()
         self.controller = QuadBacksteppingController(self.dynamics)
         self.plot = True
 
@@ -176,13 +177,13 @@ class TestBacksteppingController(unittest.TestCase):
         # Convert a trajectory into states and feedforward
         # Set the goals and try track a trajectory
         # Run controller
+        self.dynamics.g = np.array([0,0,-9.81])
         N = 1000
         dt = 0.01
         xd, snap_d = getTrajectoryState(0, self.dynamics, self.controller)
         self.controller.setGoal(xd, snap_d)
-        print "xd: ", xd
-        print "snap_d: ", snap_d
         x = xd.copy()
+        x[:3] = np.array([0,0,0])
         xds = [xd]
         xs = [x]
         LF = []
@@ -202,10 +203,8 @@ class TestBacksteppingController(unittest.TestCase):
             xd, snap_d = getTrajectoryState((i+1)*dt, self.dynamics, self.controller)
             xds.append(xd)
             self.controller.setGoal(xd, snap_d)
-        print "xs: ",
         if self.plot:
             xs = np.vstack(xs)
-            print xs[:,:3]
             xds = np.vstack(xds)
             fig = plt.figure(1)
             ax = fig.add_subplot(111, projection='3d')
@@ -215,4 +214,5 @@ class TestBacksteppingController(unittest.TestCase):
             ax.axis('equal')
             plt.figure(2)
             plt.plot(LF)
+            plt.ylabel('Lyapunov Function')
             plt.show(block=True)
