@@ -40,8 +40,8 @@ class QuadBacksteppingController(AbstractController):
         Red = np.dot(Rd, self.e3)
         self.pd = pd
         self.vd = vd
-        self.ad = Red*ud + self.dynamics.g
-        self.jerk_d = Red*dud + np.dot(Rd, np.cross(omegad, self.e3))*ud
+        self.ad = (1/self.dynamics.mass)*Red*ud + self.dynamics.g
+        self.jerk_d = (1/self.dynamics.mass)*(Red*dud + np.dot(Rd, np.cross(omegad, self.e3))*ud)
         self.snap_d = snap_d
 
     def decomposeState(self, x):

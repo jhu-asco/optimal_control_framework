@@ -8,6 +8,27 @@ import numpy as np
 import numpy.testing as np_testing
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from transforms3d.euler import mat2euler, euler2mat
+
+def getTrajectoryState(t, dynamics, controller):
+    pd = np.array([np.cos(t), np.sin(t), 0])
+    vd = np.array([-np.sin(t), np.cos(t), 0])
+    ad = np.array([-np.cos(t), -np.sin(t), 0])
+    jerk_d = np.array([np.sin(t), -np.cos(t), 0])
+    snap_d = np.array([np.cos(t), np.sin(t), 0])
+    gd = dynamics.mass*(ad - dynamics.g)
+    ud = np.linalg.norm(gd)
+    bz = gd/ud
+    by = controller.normalize_cross(bz, np.array([1, 0, 0]))
+    Rd = np.vstack((controller.normalize_cross(by,bz), by, bz)).transpose()
+    rpyd = mat2euler(Rd, 'rzyx')[::-1]  # Get roll first
+    R_e = euler2mat(rpyd[2], rpyd[1], rpyd[0], 'rzyx')
+    r_jerk_d = dynamics.mass*np.dot(Rd.T, jerk_d)
+    dud = np.dot(controller.e3, r_jerk_d)
+    # Works for omegaz = 0 i.e no yawing
+    residual = r_jerk_d - dud*controller.e3
+    omegad = np.cross(controller.e3, residual)/ud
+    return np.hstack((pd, vd, rpyd, omegad, ud, dud)), snap_d
 
 
 class TestBacksteppingController(unittest.TestCase):
@@ -154,4 +175,44 @@ class TestBacksteppingController(unittest.TestCase):
     def testTrajectoryControl(self):
         # Convert a trajectory into states and feedforward
         # Set the goals and try track a trajectory
-        pass
+        # Run controller
+        N = 1000
+        dt = 0.01
+        xd, snap_d = getTrajectoryState(0, self.dynamics, self.controller)
+        self.controller.setGoal(xd, snap_d)
+        print "xd: ", xd
+        print "snap_d: ", snap_d
+        x = xd.copy()
+        xds = [xd]
+        xs = [x]
+        LF = []
+        # Set gains
+        kp = np.array([0.2,0.2,0.2])
+        kv = np.array([0.8,0.8,0.8])
+        k1 = 5
+        k2 = 5
+        self.controller.setGains(np.hstack((kp, kv, k1, k2)))
+        for i in range(N):
+            u = self.controller.control(i, x)
+            xdot  = self.dynamics.xdot(i*dt, x, u, np.zeros(14))
+            x = x + xdot*dt
+            xs.append(x)
+            LF.append(self.controller.LF)
+            # Update goal
+            xd, snap_d = getTrajectoryState((i+1)*dt, self.dynamics, self.controller)
+            xds.append(xd)
+            self.controller.setGoal(xd, snap_d)
+        print "xs: ",
+        if self.plot:
+            xs = np.vstack(xs)
+            print xs[:,:3]
+            xds = np.vstack(xds)
+            fig = plt.figure(1)
+            ax = fig.add_subplot(111, projection='3d')
+            ax.plot(xs[:,0],xs[:,1],zs=xs[:,2])
+            ax.plot(xds[:,0],xds[:,1], xds[:,2], 'r-')
+            ax.plot([0],[0],[0], 'm*')
+            ax.axis('equal')
+            plt.figure(2)
+            plt.plot(LF)
+            plt.show(block=True)
