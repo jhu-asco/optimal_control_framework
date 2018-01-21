@@ -15,6 +15,8 @@ class QuadBacksteppingController(AbstractController):
     #Backstepping gains
     k1 = 1
     k2 = 1
+    kyd = 4
+    kyp = 4
     K = np.zeros((3,6))
     P = np.eye(6)
     Q = np.eye(6)
@@ -23,7 +25,7 @@ class QuadBacksteppingController(AbstractController):
 
     def __init__(self, dynamics):
       super(QuadBacksteppingController, self).__init__(dynamics)
-      self.m = 2  # Feedforward trajectory pddot
+      self.m = 3  # Feedforward snap
       self.max_thetadot = np.pi/2
       self.A = np.zeros((6,6))
       self.A[:3, 3:] = np.eye(3)
@@ -83,6 +85,7 @@ class QuadBacksteppingController(AbstractController):
         Compute the double derivative of thrust and
         torque needed to track a reference trajectory
         """
+        rpy = x[6:9]
         m = self.dynamics.mass
         J = self.dynamics.J
         ag = self.dynamics.g
@@ -154,4 +157,5 @@ class QuadBacksteppingController(AbstractController):
         T = np.dot(J, np.cross(self.e3, c/u)) - np.cross(np.dot(J, omega), omega)
 
         self.LF = (np.dot(z0, np.dot(self.P,z0)) + np.dot(z1, z1) + np.dot(z2, z2))/2.0
+        T[2] = T[2] - self.kyd*omega[2] - self.kyp*rpy[2]
         return np.hstack((ddu, T))

@@ -149,6 +149,7 @@ class TestBacksteppingController(unittest.TestCase):
         dt = 0.01
         x = np.zeros(14)
         x[12] = 9.81
+        x[8] = 0.2
         xs = [x]
         LF = []
         for i in range(N):
