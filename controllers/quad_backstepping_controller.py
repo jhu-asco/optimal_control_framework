@@ -15,8 +15,8 @@ class QuadBacksteppingController(AbstractController):
     #Backstepping gains
     k1 = 1
     k2 = 1
-    kyd = 4
-    kyp = 4
+    kyd = 10
+    kyp = 10
     K = np.zeros((3,6))
     P = np.eye(6)
     Q = np.eye(6)
