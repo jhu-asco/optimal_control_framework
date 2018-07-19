@@ -18,7 +18,7 @@ class AbstractDynamicSystem(object):
     self.m = 1
 
   @abstractmethod
-  def jacobian(t, x, u, wbar):
+  def jacobian(t, x, u, wbar=None):
     """
     Return jacobian for the dynamics
     function. The ODE: xdot = f_theta(t,x,u,w)
@@ -33,7 +33,7 @@ class AbstractDynamicSystem(object):
     pass
 
   @abstractmethod
-  def xdot(t, x, u, w):
+  def xdot(t, x, u, w=None):
     """
     The dynamic function f_theta(t,x,u)
     that specifies the ODE: xdot = f_theta(t,x,u,p)

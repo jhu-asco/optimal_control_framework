@@ -28,4 +28,17 @@ class LQRCost(AbstractCost):
   def terminal_cost(self, xf):
     xdiff =  xf - self.xd[-1]
     return np.dot(xdiff,self.Qf*xdiff)
-    
+
+  def stagewise_jacobian(self, i, x, u):
+    xdiff =  x - self.xd[i]
+    return self.Q*xdiff, self.R*u
+
+  def terminal_jacobian(self, x):
+    xdiff =  xf - self.xd[-1]
+    return self.Qf*xdiff
+
+  def stagewise_hessian(self, i, x, u):
+    return np.diag(self.Q), np.diag(self.R), 0
+
+  def terminal_hessian(self, x):
+    return np.diag(self.Qf)
