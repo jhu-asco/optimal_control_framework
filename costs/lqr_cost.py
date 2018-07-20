@@ -16,10 +16,10 @@ class LQRCost(AbstractCost):
     n = self.Q.shape[0]
     if xd is None:
         self.xd = np.zeros((N+1, n))
-    elif xs.shape[0] == N+1:
+    elif xd.shape[0] == N+1:
         self.xd = xd
-    elif xs.shape[0] == n:
-        self.xd = np.stack(xd, (N+1, 1))
+    elif xd.shape[0] == n:
+        self.xd = np.tile(xd, (N+1, 1))
 
   def stagewise_cost(self, i, x, u):
     xdiff =  x - self.xd[i]

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import numpy as np
-import scipy.linalg.solve as linalg_solve
+import scipy.linalg as scipy_linalg
 
-class DDP:
+class Ddp:
     def __init__(self, dynamics, cost, us0, x0, dt, max_step):
         self.dynamics = dynamics
         self.cost = cost
@@ -11,6 +11,7 @@ class DDP:
         N = self.cost.N
         n = self.dynamics.n
         m = self.dynamics.m
+        self.w = np.zeros(n) # Mean noise
         self.Ks = np.zeros((N, m, n+1))
         self.xs = np.empty((N+1, n))
         self.xs[0] = x0
@@ -21,7 +22,7 @@ class DDP:
         self.V = np.Inf # Total value function
         self.alpha = 1
         # Initialization
-        self.update_dynamics()
+        self.update_dynamics(self.us, self.xs)
 
     def regularize(self, Q, min_hessian_value):
         w, v = np.linalg.eigh(Q)
@@ -32,11 +33,11 @@ class DDP:
         else:
             return Q
 
-    def update_dynamics(self):
-        for i, u in enumerate(self.us):
+    def update_dynamics(self, us, xs):
+        for i, u in enumerate(us):
             x = xs[i]
-            xdot = self.dynamics.xdot(i, x, u)
-            self.xs[i+1] = x + self.dt*xdot  # For now euler integration
+            xdot = self.dynamics.xdot(i, x, u, self.w)
+            xs[i+1] = x + self.dt*xdot  # For now euler integration
             # TODO Change instead of dynamics take in an integrator that
             # integrates continuous dynamics using a fancy integrator maybe
 
@@ -46,7 +47,7 @@ class DDP:
         for k in range(self.N-1, -1, -1):
             Lx, Lu = self.cost.stagewise_jacobian(i, xs[k], us[k])
             Lxx, Luu, Lxu = self.cost.stagewise_hessian(i, xs[k], us[k])
-            fx, fu,_ = self.dynamics.jacobian(i, xs[k], us[k])
+            fx, fu,_ = self.dynamics.jacobian(i, xs[k], us[k], self.w)
             Qx = Lx + np.dot(fx.T, Vx)
             Qu = Lu + np.dot(fu.T, Vx)
             Qxx = Lxx + np.dot(fx.T, np.dot(Vxx, fx))
@@ -54,7 +55,7 @@ class DDP:
             Qux = Lxu + np.dot(fu.T, np.dot(Vxx, fx))
             Quu_reg = self.regularize(Quu, min_hessian_value)
             Qux_u = np.hstack((Qux, Qu[:, np.newaxis]))
-            K = -linalg_solve(Quu_reg, Qux_u, sym_pos=True)
+            K = -scipy_linalg.solve(Quu_reg, Qux_u, sym_pos=True)
             Vx = Qx + np.dot(K[:, :-1].T, Qu)
             Vxx = Qxx + np.dot(K[:, :-1].T, Qux) 
             Ks[k] = K
@@ -66,7 +67,7 @@ class DDP:
             delta_x = x - self.xs[k]
             K_k = Ks[k]
             u = self.us[k] + alpha*K_k[:, -1] + np.dot(K_k[:, :-1], delta_x)
-            xdot = self.dynamics.xdot(k, x, u)
+            xdot = self.dynamics.xdot(k, x, u, self.w)
             Vnew = Vnew + self.cost.stagewise_cost(k, x, u)
             self.xs_up[k+1] = x + self.dt*xdot  # For now euler integration
             self.us_up[k] = u
@@ -76,7 +77,7 @@ class DDP:
     def forward_pass(self, Ks):
         Vnew = np.Inf
         alpha = self.alpha
-        while (Vnew < self.V) or alpha > 1e-16:
+        while (Vnew >= self.V) or alpha > 1e-16:
             Vnew = forward_pass_step(Ks, xs, us, alpha)
             if Vnew < self.V:
                 alpha = 2*alpha
