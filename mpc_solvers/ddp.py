@@ -102,4 +102,4 @@ class Ddp:
         self.backward_pass(self.xs, self.us, self.Ks,
                            self.min_hessian_value)
         self.V = self.forward_pass(self.Ks)
-        print("Cost: ", self.V)
+        # print("Cost: ", self.V)

@@ -42,7 +42,7 @@ class TestDDPLinearDynamics(unittest.TestCase):
             ddp.iterate()
             self.assertLessEqual(ddp.V, V)
             V = ddp.V
-            print("xn: ", ddp.xs[-1])
+            # print("xn: ", ddp.xs[-1])
         np_testing.assert_almost_equal(ddp.xs[-1], self.xd, decimal=2)
 
 class TestDDPUnicycleDynamics(unittest.TestCase):
@@ -74,7 +74,7 @@ class TestDDPUnicycleDynamics(unittest.TestCase):
             ddp.iterate()
             self.assertLessEqual(ddp.V, V)
             V = ddp.V
-            print("xn: ", ddp.xs[-1])
+            # print("xn: ", ddp.xs[-1])
         np_testing.assert_almost_equal(ddp.xs[-1], self.xd, decimal=2)
 
 if __name__ == "__main__":
