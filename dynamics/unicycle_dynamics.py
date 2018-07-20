@@ -30,9 +30,9 @@ class UnicycleDynamics(AbstractDynamicSystem):
         theta = x[2]
         fx = np.array([[0, 0, 0],
                        [0, 0, 0],
-                       [-v*np.sin(theta), v*np.cos(theta), 0]])
+                       [-v*np.sin(theta), v*np.cos(theta), 0]]).T
         fu = np.array([[np.cos(theta), np.sin(theta), 0],
-                       [0, 0, 1]])
+                       [0, 0, 1]]).T
         fw = np.eye(3)
         return [fx, fu, fw]
 

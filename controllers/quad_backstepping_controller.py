@@ -122,7 +122,7 @@ class QuadBacksteppingController(AbstractController):
         #sd.u = norm(gd)
         u_d = np.linalg.norm(gd)
         if u_d < self.tol:
-            print 'Desired thrust close to zero!'
+            print('Desired thrust close to zero!')
             u_d = u_d + self.tol
 
         du_d = np.dot(ad, gd)/u_d
