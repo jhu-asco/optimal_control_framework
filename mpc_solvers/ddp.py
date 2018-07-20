@@ -21,6 +21,7 @@ class Ddp:
         self.xs_up[0] = x0
         self.V = np.Inf # Total value function
         self.alpha = 1
+        self.N = N
         # Initialization
         self.update_dynamics(self.us, self.xs)
 
@@ -34,25 +35,31 @@ class Ddp:
             return Q
 
     def update_dynamics(self, us, xs):
+        self.V = 0
         for i, u in enumerate(us):
             x = xs[i]
+            self.V = self.V + self.cost.stagewise_cost(i, x, u)
             xdot = self.dynamics.xdot(i, x, u, self.w)
             xs[i+1] = x + self.dt*xdot  # For now euler integration
             # TODO Change instead of dynamics take in an integrator that
             # integrates continuous dynamics using a fancy integrator maybe
+        self.V = self.V + self.cost.terminal_cost(xs[-1])
 
     def backward_pass(self, xs, us, Ks, min_hessian_value):
-        Vx = self.cost.terminal_jacobian(xs[self.N])
-        Vxx = self.cost.terminal_hessian(xs[self.N])
+        Vx = self.cost.terminal_jacobian(xs[-1])
+        Vxx = self.cost.terminal_hessian(xs[-1])
         for k in range(self.N-1, -1, -1):
-            Lx, Lu = self.cost.stagewise_jacobian(i, xs[k], us[k])
-            Lxx, Luu, Lxu = self.cost.stagewise_hessian(i, xs[k], us[k])
-            fx, fu,_ = self.dynamics.jacobian(i, xs[k], us[k], self.w)
-            Qx = Lx + np.dot(fx.T, Vx)
-            Qu = Lu + np.dot(fu.T, Vx)
-            Qxx = Lxx + np.dot(fx.T, np.dot(Vxx, fx))
-            Quu = Luu + np.dot(fu.T, np.dot(Vxx, fu))
-            Qux = Lxu + np.dot(fu.T, np.dot(Vxx, fx))
+            Lx, Lu = self.cost.stagewise_jacobian(k, xs[k], us[k])
+            Lxx, Luu, Lxu = self.cost.stagewise_hessian(k, xs[k], us[k])
+            fx, fu, _ = self.dynamics.jacobian(k, xs[k], us[k], self.w)
+            # Find better jacobians based on notes!!
+            fx_bar = np.eye(self.dynamics.n) + fx*self.dt
+            fu_bar = fu*self.dt
+            Qx = Lx + np.dot(fx_bar.T, Vx)
+            Qu = Lu + np.dot(fu_bar.T, Vx)
+            Qxx = Lxx + np.dot(fx_bar.T, np.dot(Vxx, fx_bar))
+            Quu = Luu + np.dot(fu_bar.T, np.dot(Vxx, fu_bar))
+            Qux = Lxu + np.dot(fu_bar.T, np.dot(Vxx, fx_bar))
             Quu_reg = self.regularize(Quu, min_hessian_value)
             Qux_u = np.hstack((Qux, Qu[:, np.newaxis]))
             K = -scipy_linalg.solve(Quu_reg, Qux_u, sym_pos=True)
@@ -62,7 +69,7 @@ class Ddp:
 
     def forward_pass_step(self, Ks, xs, us, alpha):
         Vnew = 0
-        for k in range(self.N - 1):
+        for k in range(self.N):
             x = self.xs_up[k]
             delta_x = x - self.xs[k]
             K_k = Ks[k]
@@ -77,8 +84,8 @@ class Ddp:
     def forward_pass(self, Ks):
         Vnew = np.Inf
         alpha = self.alpha
-        while (Vnew >= self.V) or alpha > 1e-16:
-            Vnew = forward_pass_step(Ks, xs, us, alpha)
+        while (Vnew >= self.V) and alpha > 1e-16:
+            Vnew = self.forward_pass_step(Ks, self.xs, self.us, alpha)
             if Vnew < self.V:
                 alpha = 2*alpha
             else:
@@ -92,6 +99,7 @@ class Ddp:
         return Vnew
 
     def iterate(self):
-        backward_pass(self, self.xs, self.us, self.Ks, self.min_hessian_value)
-        self.V = forward_pass(self, self.Ks)
+        self.backward_pass(self.xs, self.us, self.Ks,
+                           self.min_hessian_value)
+        self.V = self.forward_pass(self.Ks)
         print("Cost: ", self.V)

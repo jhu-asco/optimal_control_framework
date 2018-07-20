@@ -21,24 +21,56 @@ class LQRCost(AbstractCost):
     elif xd.shape[0] == n:
         self.xd = np.tile(xd, (N+1, 1))
 
+  def getQxRu(self, xdiff, u):
+      if self.Q.ndim == 1:
+          Qx = self.Q*xdiff
+      else:
+          Qx = np.dot(self.Q, xdiff)
+      if self.R.ndim == 1:
+          Ru = self.R*u
+      else:
+          Ru = np.dot(self.R, u)
+      return Qx, Ru
+
   def stagewise_cost(self, i, x, u):
     xdiff =  x - self.xd[i]
-    return np.dot(xdiff,self.Q*xdiff) + np.dot(u,self.R*u)
+    Qx, Ru = self.getQxRu(xdiff, u)
+    return np.dot(xdiff,Qx) + np.dot(u,Ru)
 
   def terminal_cost(self, xf):
     xdiff =  xf - self.xd[-1]
-    return np.dot(xdiff,self.Qf*xdiff)
+    if self.Qf.ndim == 1:
+        Qfx = self.Qf*xdiff
+    else:
+        Qfx = np.dot(self.Qf, xdiff)
+    return np.dot(xdiff, Qfx)
 
   def stagewise_jacobian(self, i, x, u):
     xdiff =  x - self.xd[i]
-    return self.Q*xdiff, self.R*u
+    return self.getQxRu(xdiff, u)
 
-  def terminal_jacobian(self, x):
+  def terminal_jacobian(self, xf):
     xdiff =  xf - self.xd[-1]
-    return self.Qf*xdiff
+    if self.Qf.ndim == 1:
+        Qfx = self.Qf*xdiff
+    else:
+        Qfx = np.dot(self.Qf, xdiff)
+    return Qfx
 
   def stagewise_hessian(self, i, x, u):
-    return np.diag(self.Q), np.diag(self.R), 0
+    if self.Q.ndim == 1:
+        Q = np.diag(self.Q)
+    else:
+        Q = self.Q
+    if self.R.ndim == 1:
+        R = np.diag(self.R)
+    else:
+        R = self.R
+    return Q, R, 0
 
   def terminal_hessian(self, x):
-    return np.diag(self.Qf)
+     if self.Qf.ndim == 1:
+         Qf = np.diag(self.Qf)
+     else:
+         Qf = self.Qf
+     return Qf
