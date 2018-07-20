@@ -43,9 +43,9 @@ class SimpleCarDynamics(AbstractDynamicSystem):
                        [0, 0, 0, 0, 0],
                        [-v*np.sin(theta), v*np.cos(theta), 0, 0, 0],
                        [np.cos(theta), np.sin(theta), np.tan(phi)/L, 0, 0],
-                       [0, 0, v/(L*(np.cos(phi)**2)), 0, 0]])
+                       [0, 0, v/(L*(np.cos(phi)**2)), 0, 0]]).T
         fu = np.array([[0, 0, 0, 1, 0],
-                       [0, 0, 0, 0, 1]])
+                       [0, 0, 0, 0, 1]]).T
         fw = np.eye(5)
         return [fx, fu, fw]
 
