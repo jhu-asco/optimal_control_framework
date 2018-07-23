@@ -46,11 +46,11 @@ class Ddp:
         self.V = self.V + self.cost.terminal_cost(xs[-1])
 
     def backward_pass(self, xs, us, Ks, min_hessian_value):
-        Vx = self.cost.terminal_jacobian(xs[-1])
-        Vxx = self.cost.terminal_hessian(xs[-1])
+        V, Vx, Vxx = self.cost.terminal_cost(xs[-1], True)
         for k in range(self.N-1, -1, -1):
-            Lx, Lu = self.cost.stagewise_jacobian(k, xs[k], us[k])
-            Lxx, Luu, Lxu = self.cost.stagewise_hessian(k, xs[k], us[k])
+            L, jac, hess = self.cost.stagewise_cost(k, xs[k], us[k], True)
+            Lx, Lu = jac
+            Lxx, Luu, Lxu = hess
             fx, fu, _ = self.dynamics.jacobian(k, xs[k], us[k], self.w)
             # Find better jacobians based on notes!!
             fx_bar = np.eye(self.dynamics.n) + fx*self.dt
