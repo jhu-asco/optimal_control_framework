@@ -37,15 +37,22 @@ class SphericalObstacle(AbstractObstacle):
         jacobian[:self.n, :self.n] = np.eye(self.n)
         return jacobian
 
-    def distance(self, x, compute_grads=False):
-        z = self.mapState(x)
-        error = z - self.center
+    def distance_substep(self, error, compute_grads=False):
         distance = min(np.linalg.norm(error)-self.radius, 0)
         jac = None
         if compute_grads:
-            if distance >= -tol:
+            if distance >= -self.tol:
                 jac = np.zeros_like(x)
             else:
-                z_x = self.mapStateJacobian(x)
-                jac = (1.0/(distance + self.radius))*(np.dot(z_x.T, error))
+                jac = (1.0/(distance + self.radius))*error
+        return distance, jac
+
+
+    def distance(self, x, compute_grads=False):
+        z = self.mapState(x)
+        error = z - self.center
+        distance, jac = self.distance_substep(error, compute_grads)
+        if compute_grads and distance < -tol:
+          z_x = self.mapStateJacobian(x)
+          jac = np.dot(z_x.T, jac)
         return distance, jac

@@ -29,6 +29,8 @@ class LQRObstacleCost(LQRCost):
             if compute_grads:
                 obst_cost_x = obst_cost_x + obst_out[1]
                 obst_cost_xx = obst_cost_xx + obst_out[2]
+        #if obst_cost > 0:
+        #    print("Hitting obstacle: ", obst_cost)
         if not compute_grads:
             return out + obst_cost
         else:
