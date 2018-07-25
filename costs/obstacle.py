@@ -42,7 +42,7 @@ class SphericalObstacle(AbstractObstacle):
         jac = None
         if compute_grads:
             if distance >= -self.tol:
-                jac = np.zeros_like(x)
+                jac = None
             else:
                 jac = (1.0/(distance + self.radius))*error
         return distance, jac
@@ -52,7 +52,10 @@ class SphericalObstacle(AbstractObstacle):
         z = self.mapState(x)
         error = z - self.center
         distance, jac = self.distance_substep(error, compute_grads)
-        if compute_grads and distance < -tol:
-          z_x = self.mapStateJacobian(x)
-          jac = np.dot(z_x.T, jac)
+        if compute_grads:
+            if distance < -self.tol:
+                z_x = self.mapStateJacobian(x)
+                jac = np.dot(z_x.T, jac)
+            else:
+                jac = np.zeros_like(x)
         return distance, jac

@@ -12,8 +12,8 @@ np.set_printoptions(precision=3, suppress=True)
 dynamics = UnicycleDynamics()
 # Trajectory info
 dt = 0.05
-N = 50
-Q = 10*dt*np.zeros(dynamics.n)
+N = 100
+Q = dt*np.zeros(dynamics.n)
 R = 0.5*dt*np.eye(dynamics.m)
 Qf = 10*np.eye(dynamics.n)
 ts = np.arange(N+1)*dt
@@ -25,7 +25,7 @@ obs_list = [obs1, obs2]
 # Desired terminal condition
 xd = np.array([1.0, 0.0, 0.0])
 cost = LQRObstacleCost(N, Q, R, Qf, xd, ko=ko, obstacles=obs_list)
-max_step = 1.0  # Allowed step for control
+max_step = 5.0  # Allowed step for control
 
 x0 = np.array([0, 0, 0])
 us0 = np.zeros([N, dynamics.m])
