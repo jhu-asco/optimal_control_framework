@@ -2,7 +2,7 @@
 import numpy as np
 import scipy.linalg as scipy_linalg
 
-class Ddp:
+class Ddp(object):
     def __init__(self, dynamics, cost, us0, x0, dt, max_step):
         self.dynamics = dynamics
         self.cost = cost

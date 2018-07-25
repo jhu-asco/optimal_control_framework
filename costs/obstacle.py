@@ -20,6 +20,7 @@ class AbstractObstacle(object):
 
 
 class SphericalObstacle(AbstractObstacle):
+    tol = 1e-12
     def __init__(self, center, radius):
         self.center = center
         self.radius = radius
@@ -42,7 +43,7 @@ class SphericalObstacle(AbstractObstacle):
         distance = min(np.linalg.norm(error)-self.radius, 0)
         jac = None
         if compute_grads:
-            if distance >= -1e-12:
+            if distance >= -tol:
                 jac = np.zeros_like(x)
             else:
                 z_x = self.mapStateJacobian(x)
