@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from optimal_control_framework.dynamics import UnicycleDynamics, CasadiUnicycleDynamics
+from optimal_control_framework.dynamics import CasadiUnicycleDynamics
 from optimal_control_framework.mpc_solvers import Ddp
 from optimal_control_framework.costs import LQRObstacleCost, SphericalObstacle
+from optimal_control_framework.discrete_integrators import SemiImplicitCarIntegrator
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Circle as CirclePatch
@@ -10,9 +11,10 @@ from matplotlib.patches import Circle as CirclePatch
 
 np.set_printoptions(precision=3, suppress=True)
 dynamics = CasadiUnicycleDynamics()
+integrator = SemiImplicitCarIntegrator(dynamics)
 # Trajectory info
 dt = 0.1
-N = 50
+N = 20
 Q = dt * np.zeros(dynamics.n)
 R = 0.1 * dt * np.eye(dynamics.m)
 Qf = 10 * np.eye(dynamics.n)
@@ -29,7 +31,8 @@ max_step = 5.0  # Allowed step for control
 
 x0 = np.array([0, 0, 0])
 us0 = np.zeros([N, dynamics.m])
-ddp = Ddp(dynamics, cost, us0, x0, dt, max_step, use_prev_x=False)
+ddp = Ddp(dynamics, cost, us0, x0, dt, max_step, use_prev_x=False,
+          integrator=integrator)
 V = ddp.V
 for i in range(50):
     ddp.iterate()

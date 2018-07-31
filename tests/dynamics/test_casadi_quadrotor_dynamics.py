@@ -36,7 +36,6 @@ class TestCasadiQuadrotorDynamics(unittest.TestCase):
         xdot_expected[5] = 10 - 1 # Thrust - gravity
         self.assertEqual(len(xdot), 12)
         np_testing.assert_almost_equal(xdot, xdot_expected)
-        print(xdot)
 
     def testJacobian(self):
         x = np.zeros(12)

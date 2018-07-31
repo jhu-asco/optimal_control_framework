@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 from optimal_control_framework.dynamics import CasadiQuadrotorDynamics
+from optimal_control_framework.discrete_integrators import (
+    SemiImplicitQuadIntegrator)
 from optimal_control_framework.mpc_solvers import Ddp
 from optimal_control_framework.costs import LQRCost
 from mpl_toolkits.mplot3d import Axes3D
@@ -14,8 +16,9 @@ sns.set(font_scale=1.2)
 np.set_printoptions(precision=3, suppress=True)
 
 dynamics = CasadiQuadrotorDynamics(g=[0,0,-10], mass=1.5)
+integrator = SemiImplicitQuadIntegrator(dynamics)
 # Trajectory info
-dt = 0.01
+dt = 0.02
 N = 100
 Q = dt*np.zeros(dynamics.n)
 R = 0.1*dt*np.eye(dynamics.m)
@@ -35,7 +38,7 @@ max_step = 100.0  # Allowed step for control
 x0 = np.zeros(dynamics.n)
 us0 = np.zeros([N, dynamics.m])
 us0[:, 0] = 10
-ddp =Ddp(dynamics, cost, us0, x0, dt, max_step)
+ddp =Ddp(dynamics, cost, us0, x0, dt, max_step, integrator=integrator)
 V = ddp.V
 for i in range(50):
     ddp.iterate()

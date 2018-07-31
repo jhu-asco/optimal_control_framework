@@ -2,18 +2,24 @@
 import numpy as np
 import scipy.linalg as scipy_linalg
 from optimal_control_framework.costs import SphericalObstacle
+from optimal_control_framework.discrete_integrators import EulerIntegrator
 
 
 class Ddp(object):
     def __init__(self, dynamics, cost, us0, x0, dt, max_step,
-                 use_prev_x=False):
+                 use_prev_x=False,
+                 integrator=None):
         self.dynamics = dynamics
+        if integrator is None:
+          self.integrator = EulerIntegrator(self.dynamics)
+        else:
+          self.integrator = integrator
         self.cost = cost
         self.us = us0  # N x m
         self.min_hessian_value = 1.0 / max_step
         N = self.cost.N
-        n = self.dynamics.n
-        m = self.dynamics.m
+        n = self.integrator.dynamics.n
+        m = self.integrator.dynamics.m
         self.w = np.zeros(n)  # Mean noise
         self.Ks = np.zeros((N, m, n + 1))
         self.xs = np.empty((N + 1, n))
@@ -46,8 +52,7 @@ class Ddp(object):
         for i, u in enumerate(us):
             x = xs[i]
             self.V = self.V + self.cost.stagewise_cost(i, x, u)
-            xdot = self.dynamics.xdot(i, x, u, self.w)
-            xs[i + 1] = x + self.dt * xdot  # For now euler integration
+            xs[i + 1] = self.integrator.step(i, self.dt, x, u, self.w)
             SphericalObstacle.updatePreviousX(x)
             # TODO Change instead of dynamics take in an integrator that
             # integrates continuous dynamics using a fancy integrator maybe
@@ -65,15 +70,13 @@ class Ddp(object):
             L, jac, hess = self.cost.stagewise_cost(k, xs[k], us[k], True)
             Lx, Lu = jac
             Lxx, Luu, Lxu = hess
-            fx, fu, _ = self.dynamics.jacobian(k, xs[k], us[k], self.w)
-            # Find better jacobians based on notes!!
-            fx_bar = np.eye(self.dynamics.n) + fx * self.dt
-            fu_bar = fu * self.dt
-            Qx = Lx + np.dot(fx_bar.T, Vx)
-            Qu = Lu + np.dot(fu_bar.T, Vx)
-            Qxx = Lxx + np.dot(fx_bar.T, np.dot(Vxx, fx_bar))
-            Quu = Luu + np.dot(fu_bar.T, np.dot(Vxx, fu_bar))
-            Qux = Lxu + np.dot(fu_bar.T, np.dot(Vxx, fx_bar))
+            fx, fu, _ = self.integrator.jacobian(k, self.dt, xs[k], us[k],
+                                                 self.w)
+            Qx = Lx + np.dot(fx.T, Vx)
+            Qu = Lu + np.dot(fu.T, Vx)
+            Qxx = Lxx + np.dot(fx.T, np.dot(Vxx, fx))
+            Quu = Luu + np.dot(fu.T, np.dot(Vxx, fu))
+            Qux = Lxu + np.dot(fu.T, np.dot(Vxx, fx))
             Quu_reg = self.regularize(Quu, min_hessian_value)
             Qux_u = np.hstack((Qux, Qu[:, np.newaxis]))
             K = -scipy_linalg.solve(Quu_reg, Qux_u, sym_pos=True)
@@ -91,9 +94,8 @@ class Ddp(object):
             delta_x = x - self.xs[k]
             K_k = Ks[k]
             u = self.us[k] + alpha * K_k[:, -1] + np.dot(K_k[:, :-1], delta_x)
-            xdot = self.dynamics.xdot(k, x, u, self.w)
             Vnew = Vnew + self.cost.stagewise_cost(k, x, u)
-            self.xs_up[k + 1] = x + self.dt * xdot  # For now euler integration
+            self.xs_up[k+1] = self.integrator.step(k, self.dt, x, u, self.w)
             SphericalObstacle.updatePreviousX(x)
             self.us_up[k] = u
         Vnew = Vnew + self.cost.terminal_cost(self.xs_up[-1])
