@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import numpy.testing as np_testing
 
-class TestLinearDynamics(unittest.TestCase):
+class TestCasadiUnicycleDynamics(unittest.TestCase):
   def setUp(self):
     self.dynamics = CasadiUnicycleDynamics()
 

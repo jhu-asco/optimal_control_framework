@@ -8,3 +8,4 @@ from quadrotor_dynamics import QuadrotorDynamics
 from unicycle_acc_dynamics import AccUnicycleDynamics
 from quadrotor_dynamics_extended import QuadrotorDynamicsExt
 from casadi_unicycle_dynamics import CasadiUnicycleDynamics
+from casadi_quadrotor_dynamics import CasadiQuadrotorDynamics
