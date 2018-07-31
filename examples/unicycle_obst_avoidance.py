@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from optimal_control_framework.dynamics import UnicycleDynamics
+from optimal_control_framework.dynamics import UnicycleDynamics, CasadiUnicycleDynamics
 from optimal_control_framework.mpc_solvers import Ddp
 from optimal_control_framework.costs import LQRObstacleCost, SphericalObstacle
 import matplotlib.pyplot as plt
@@ -9,7 +9,7 @@ from matplotlib.patches import Circle as CirclePatch
 
 
 np.set_printoptions(precision=3, suppress=True)
-dynamics = UnicycleDynamics()
+dynamics = CasadiUnicycleDynamics()
 # Trajectory info
 dt = 0.1
 N = 50
