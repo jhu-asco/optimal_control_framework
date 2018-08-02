@@ -2,7 +2,7 @@ from optimal_control_framework.costs import AbstractCost
 import numpy as np
 
 class LQRCost(AbstractCost):
-  def __init__(self, N, Q, R, Qf, xd=None):
+  def __init__(self, N, Q, R, Qf, xd=None, ud=None):
     """
     Assuming Q,R,Qf are vectors of appropriate length
     xd can be a single goal state or a matrix [N+1, n].
@@ -20,21 +20,34 @@ class LQRCost(AbstractCost):
         self.xd = xd
     elif xd.shape[0] == n:
         self.xd = np.tile(xd, (N+1, 1))
+    else:
+        raise RuntimeError("Wrong shape of xd: "+str(xd.shape()))
 
-  def getQxRu(self, xdiff, u):
+    m = self.R.shape[0]
+    if ud is None:
+        self.ud = np.zeros((N, m))
+    elif ud.shape[0] == N:
+        self.ud = ud
+    elif ud.shape[0] == m:
+        self.ud = np.tile(ud, (N, 1))
+    else:
+        raise RuntimeError("Wrong shape of ud: "+str(ud.shape()))
+
+  def getQxRu(self, xdiff, udiff):
       if self.Q.ndim == 1:
           Qx = self.Q*xdiff
       else:
           Qx = np.dot(self.Q, xdiff)
       if self.R.ndim == 1:
-          Ru = self.R*u
+          Ru = self.R*udiff
       else:
-          Ru = np.dot(self.R, u)
+          Ru = np.dot(self.R, udiff)
       return Qx, Ru
 
   def stagewise_cost(self, i, x, u, compute_grads=False):
     xdiff =  x - self.xd[i]
-    Qx, Ru = self.getQxRu(xdiff, u)
+    udiff = u - self.ud[i]
+    Qx, Ru = self.getQxRu(xdiff, udiff)
     cost = 0.5*(np.dot(xdiff,Qx) + np.dot(u,Ru))
     if not compute_grads:
         return cost

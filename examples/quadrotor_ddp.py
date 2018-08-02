@@ -25,7 +25,7 @@ dt = 0.02
 N = 100
 Q = dt*np.zeros(dynamics.n)
 R = 0.1*dt*np.eye(dynamics.m)
-R[0,0] = 1e-4  # Thrust
+#R[0, 0] = 1e-4 # Thrust
 Qf_arr = np.zeros(dynamics.n)
 Qf_arr[:3] = 100  # Position
 Qf_arr[3:6] = 100  # Velocity
@@ -33,19 +33,21 @@ Qf_arr[6:9] = 10  # RPY
 Qf_arr[9:12] = 1  # 0mega
 Qf = np.diag(Qf_arr)
 ts = np.arange(N+1)*dt
+# Desired
 xd = np.zeros(dynamics.n)
 xd[:3] = 1.0
+ud = np.zeros(dynamics.m)
+ud[0] = 10 # Negative of gravity
 # Obstacles
 ko = 100
 obs1 = SphericalObstacle(np.array([0.6, 0.6, 0.9]), 0.2)
 obs2 = SphericalObstacle(np.array([0.3, 0.3, 0.3]), 0.2)
 obs_list = [obs1, obs2]
-cost = LQRObstacleCost(N, Q, R, Qf, xd, ko=ko, obstacles=obs_list)
+cost = LQRObstacleCost(N, Q, R, Qf, xd, ko=ko, obstacles=obs_list, ud=ud)
 max_step = 100.0  # Allowed step for control
 
 x0 = np.zeros(dynamics.n)
-us0 = np.zeros([N, dynamics.m])
-us0[:, 0] = 10
+us0 = np.tile(ud, (N, 1))
 ddp =Ddp(dynamics, cost, us0, x0, dt, max_step, integrator=integrator)
 V = ddp.V
 for i in range(50):
@@ -53,6 +55,8 @@ for i in range(50):
     V = ddp.V
     print("V: ", V)
     print("xn_pos: ", ddp.xs[-1][:3])
+    if not ddp.status:
+      break
 # %%
 f = plt.figure(1)
 plt.clf()
@@ -76,7 +80,7 @@ plt.ylabel('Thrust (N)')
 body_axes = ['x', 'y', 'z']
 for i in range(3):
     plt.subplot(2,2,i+2)
-    plt.plot(ts[:-1], ddp.us[:, i])
+    plt.plot(ts[:-1], ddp.us[:, i+1])
     plt.ylabel('Torque '+body_axes[i]+'(Nm)')
 # Plot all states later
 plt.show()

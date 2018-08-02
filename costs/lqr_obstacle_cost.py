@@ -2,8 +2,8 @@ from optimal_control_framework.costs import LQRCost
 import numpy as np
 
 class LQRObstacleCost(LQRCost):
-    def __init__(self, N, Q, R, Qf, xd=None, obstacles=[], ko = 1):
-        super(LQRObstacleCost, self).__init__(N, Q, R, Qf, xd)
+    def __init__(self, N, Q, R, Qf, xd=None, obstacles=[], ko = 1, ud=None):
+        super(LQRObstacleCost, self).__init__(N, Q, R, Qf, xd, ud)
         self.obstacles = obstacles
         self.ko = ko
 

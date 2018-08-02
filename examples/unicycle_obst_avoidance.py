@@ -14,9 +14,9 @@ dynamics = CasadiUnicycleDynamics()
 integrator = SemiImplicitCarIntegrator(dynamics)
 # Trajectory info
 dt = 0.1
-N = 20
+N = 30
 Q = dt * np.zeros(dynamics.n)
-R = 0.1 * dt * np.eye(dynamics.m)
+R = 0.5 * dt * np.eye(dynamics.m)
 Qf = 10 * np.eye(dynamics.n)
 ts = np.arange(N + 1) * dt
 # Obstacles
@@ -26,7 +26,8 @@ obs2 = SphericalObstacle(np.array([0.7, -0.12]), 0.05)
 obs_list = [obs1, obs2]
 # Desired terminal condition
 xd = np.array([1.0, 0.0, 0.0])
-cost = LQRObstacleCost(N, Q, R, Qf, xd, ko=ko, obstacles=obs_list)
+ud = np.array([0.5, 0.0])
+cost = LQRObstacleCost(N, Q, R, Qf, xd, ko=ko, obstacles=obs_list, ud=ud)
 max_step = 5.0  # Allowed step for control
 
 x0 = np.array([0, 0, 0])
