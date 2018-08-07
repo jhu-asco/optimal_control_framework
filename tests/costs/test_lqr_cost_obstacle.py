@@ -46,21 +46,6 @@ class TestLQRObstacleCost(unittest.TestCase):
         np_testing.assert_almost_equal(jac[0], fx_approx, decimal=4)
         np_testing.assert_almost_equal(jac[1], fu_approx, decimal=4)
 
-    def test_stagewise_grads_w_prev_cost(self):
-        SphericalObstacle.use_xprev = True
-        SphericalObstacle.updatePreviousX(np.random.sample(self.n))
-        x = 0.1 * np.random.sample(self.n) + np.array([1, 1])
-        u = np.random.sample(self.m)
-        L, jac, hess = self.cost.stagewise_cost(0, x, u, True)
-
-        def fx(x1): return (self.cost.stagewise_cost(0, x1, u, True)[0])
-
-        def fu(u1): return (self.cost.stagewise_cost(0, x, u1, True)[0])
-        fx_approx = optimize.approx_fprime(x, fx, 1e-6)
-        fu_approx = optimize.approx_fprime(u, fu, 1e-6)
-        np_testing.assert_almost_equal(jac[0], fx_approx, decimal=4)
-        np_testing.assert_almost_equal(jac[1], fu_approx, decimal=4)
-
     def test_terminal_grads(self):
         x = np.random.sample(self.n)
         Lf, Qfx, Qfxx = self.cost.terminal_cost(x, True)

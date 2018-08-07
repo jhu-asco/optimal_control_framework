@@ -32,7 +32,7 @@ max_step = 5.0  # Allowed step for control
 
 x0 = np.array([0, 0, 0])
 us0 = np.zeros([N, dynamics.m])
-ddp = Ddp(dynamics, cost, us0, x0, dt, max_step, use_prev_x=False,
+ddp = Ddp(dynamics, cost, us0, x0, dt, max_step,
           integrator=integrator)
 V = ddp.V
 for i in range(50):

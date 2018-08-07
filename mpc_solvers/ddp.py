@@ -7,7 +7,6 @@ from optimal_control_framework.discrete_integrators import EulerIntegrator
 
 class Ddp(object):
     def __init__(self, dynamics, cost, us0, x0, dt, max_step,
-                 use_prev_x=False,
                  integrator=None):
         self.dynamics = dynamics
         if integrator is None:
@@ -32,10 +31,8 @@ class Ddp(object):
         self.alpha = 1
         self.N = N
         self.status = True
-        SphericalObstacle.use_xprev = use_prev_x
         # Initialization
         self.update_dynamics(self.us, self.xs)
-        self.use_prev_x = use_prev_x
 
     def regularize(self, Q, min_hessian_value):
         w, v = np.linalg.eigh(Q)
@@ -48,25 +45,17 @@ class Ddp(object):
 
     def update_dynamics(self, us, xs):
         self.V = 0
-        SphericalObstacle.updatePreviousX(None)
         for i, u in enumerate(us):
             x = xs[i]
             self.V = self.V + self.cost.stagewise_cost(i, x, u)
             xs[i + 1] = self.integrator.step(i, self.dt, x, u, self.w)
-            SphericalObstacle.updatePreviousX(x)
             # TODO Change instead of dynamics take in an integrator that
             # integrates continuous dynamics using a fancy integrator maybe
         self.V = self.V + self.cost.terminal_cost(xs[-1])
-        SphericalObstacle.updatePreviousX(None)
 
     def backward_pass(self, xs, us, Ks, min_hessian_value):
-        SphericalObstacle.updatePreviousX(xs[-2])
         V, Vx, Vxx = self.cost.terminal_cost(xs[-1], True)
         for k in range(self.N - 1, -1, -1):
-            if k != 0:
-                SphericalObstacle.updatePreviousX(xs[k - 1])
-            else:
-                SphericalObstacle.updatePreviousX(None)
             L, jac, hess = self.cost.stagewise_cost(k, xs[k], us[k], True)
             Lx, Lu = jac
             Lxx, Luu, Lxu = hess
@@ -83,12 +72,9 @@ class Ddp(object):
             Vx = Qx + np.dot(K[:, :-1].T, Qu)
             Vxx = Qxx + np.dot(K[:, :-1].T, Qux)
             Ks[k] = K
-        # Reset
-        SphericalObstacle.updatePreviousX(None)
 
     def forward_pass_step(self, Ks, xs, us, alpha):
         Vnew = 0
-        SphericalObstacle.updatePreviousX(None)
         for k in range(self.N):
             x = self.xs_up[k]
             delta_x = x - self.xs[k]
@@ -96,10 +82,8 @@ class Ddp(object):
             u = self.us[k] + alpha * K_k[:, -1] + np.dot(K_k[:, :-1], delta_x)
             Vnew = Vnew + self.cost.stagewise_cost(k, x, u)
             self.xs_up[k+1] = self.integrator.step(k, self.dt, x, u, self.w)
-            SphericalObstacle.updatePreviousX(x)
             self.us_up[k] = u
         Vnew = Vnew + self.cost.terminal_cost(self.xs_up[-1])
-        SphericalObstacle.updatePreviousX(None)
         return Vnew
 
     def forward_pass(self, Ks):
