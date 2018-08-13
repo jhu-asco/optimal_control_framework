@@ -1,1 +1,2 @@
 from sampling_dynamics import SampleTrajectories
+from discrete_sampler import DiscreteSampleTrajectories

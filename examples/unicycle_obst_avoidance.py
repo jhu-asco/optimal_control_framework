@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pickle
 from optimal_control_framework.dynamics import CasadiUnicycleDynamics
 from optimal_control_framework.mpc_solvers import Ddp
 from optimal_control_framework.costs import LQRObstacleCost, SphericalObstacle
 from optimal_control_framework.discrete_integrators import SemiImplicitCarIntegrator
-import matplotlib.pyplot as plt
-import numpy as np
+from optimal_control_framework.sampling import DiscreteSampleTrajectories
 from matplotlib.patches import Circle as CirclePatch
 
 
@@ -42,11 +44,21 @@ for i in range(50):
     print("xn: ", ddp.xs[-1])
     if not ddp.status:
         break
+# Sample example trajectories
+scale = 0.01*np.array([1, 1, 0.0])
+ws_sampling_fun = lambda : (np.random.sample(dynamics.n)-0.5)*0.0
+x0_sampling_fun = lambda : ((np.random.sample(dynamics.n)-0.5)*scale + x0)
+sampler = DiscreteSampleTrajectories(dynamics, integrator, cost, ws_sampling_fun, x0_sampling_fun)
+M = 100
+xss, uss, Jss = sampler.sample(M, ts, ddp)
+pickle.dump({'xss':xss, 'uss':uss, 'Jss': Jss}, open('unicycle_samples.pickle', 'wb'))
 f = plt.figure(1)
 plt.clf()
 ax = f.add_subplot(111)
 ax.set_aspect('equal')
 plt.plot(ddp.xs[:, 0], ddp.xs[:, 1], 'b*-')
+for j in range(M):
+    plt.plot(xss[j][:,0], xss[j][:, 1], 'g*-')
 plt.plot(xd[0], xd[1], 'r*')
 plt.xlabel('x (m)')
 plt.ylabel('y (m)')
