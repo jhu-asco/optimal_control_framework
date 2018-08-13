@@ -46,6 +46,12 @@ class Ddp(object):
         else:
             return Q
 
+    def control(self, k, x):
+        delta_x = x - self.xs[k]
+        K_k = self.Ks[k]
+        u = self.us[k] + np.dot(K_k[:, :-1], delta_x)
+        return u
+
     def update_dynamics(self, us, xs):
         self.V = 0
         SphericalObstacle.updatePreviousX(None)
