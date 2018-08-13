@@ -4,7 +4,6 @@ from optimal_control_framework.discrete_integrators import AbstractIntegrator
 from optimal_control_framework.costs import AbstractCost
 from optimal_control_framework.dynamics import AbstractDynamicSystem
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 """
@@ -21,13 +20,14 @@ class DiscreteSampleTrajectories:
   def default_x0_sampling_fun(self):
     return np.zeros(self.dynamics.n)
 
-  def __init__(self, dynamics, discrete_integrator, cost, ws_sampling_fun=None, x0_sampling_fun=None):
+  def __init__(self, dynamics, discrete_integrator, cost=None, ws_sampling_fun=None, x0_sampling_fun=None):
     """
     Store static classes used to sample
     """
     assert(isinstance(dynamics, AbstractDynamicSystem))
     assert(isinstance(discrete_integrator, AbstractIntegrator))
-    assert(isinstance(cost, AbstractCost))
+    if cost is not None:
+        assert(isinstance(cost, AbstractCost))
     self.dynamics = dynamics
     self.integrator = discrete_integrator
     self.cost = cost
@@ -56,5 +56,6 @@ class DiscreteSampleTrajectories:
         dt = ts[j+1] - ts[j]
         w = self.ws_sampling_fun()
         xss[i, j+1, :] = self.integrator.step(i, dt, xss[i][j], uss[i][j], w)
-      Jss[i] = self.cost.cumulative_cost(xss[i], uss[i])
+      if self.cost is not None:
+        Jss[i] = self.cost.cumulative_cost(xss[i], uss[i])
     return [xss, uss, Jss]

@@ -51,7 +51,7 @@ x0_sampling_fun = lambda : ((np.random.sample(dynamics.n)-0.5)*scale + x0)
 sampler = DiscreteSampleTrajectories(dynamics, integrator, cost, ws_sampling_fun, x0_sampling_fun)
 M = 100
 xss, uss, Jss = sampler.sample(M, ts, ddp)
-pickle.dump({'xss':xss, 'uss':uss, 'Jss': Jss}, open('unicycle_samples.pickle', 'wb'))
+pickle.dump({'xss':xss, 'uss':uss, 'Jss': Jss, 'obs_list': obs_list}, open('unicycle_samples.pickle', 'wb'))
 f = plt.figure(1)
 plt.clf()
 ax = f.add_subplot(111)
