@@ -22,6 +22,7 @@ class AbstractObstacle(object):
 
 class SphericalObstacle(AbstractObstacle):
     tol = 1e-12
+    buf = 0
 
     def __init__(self, center, radius):
         self.center = center
@@ -46,13 +47,14 @@ class SphericalObstacle(AbstractObstacle):
         return self.projectionMatrix
 
     def distance_substep(self, error, compute_grads=False):
-        distance = min(np.linalg.norm(error) - self.radius, 0)
+        radius_dilated = self.radius + self.buf
+        distance = min(np.linalg.norm(error) - radius_dilated, 0)
         jac = None
         if compute_grads:
             if distance >= -self.tol:
                 jac = None
             else:
-                jac = (1.0 / (distance + self.radius)) * error
+                jac = (1.0 / (distance + radius_dilated)) * error
         return distance, jac
 
     def findError(self, x):

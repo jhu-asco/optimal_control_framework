@@ -20,6 +20,14 @@ class DiscreteSampleTrajectories:
   def default_x0_sampling_fun(self):
     return np.zeros(self.dynamics.n)
 
+  def isColliding(self, obs_list, xs):
+      for x in xs:
+          for obs in obs_list:
+              distance,_ = obs.distance(x)
+              if distance < 0:
+                  return True
+      return False
+
   def __init__(self, dynamics, discrete_integrator, cost=None, ws_sampling_fun=None, x0_sampling_fun=None):
     """
     Store static classes used to sample
