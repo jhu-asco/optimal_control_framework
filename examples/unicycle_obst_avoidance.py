@@ -53,24 +53,25 @@ Sigmad = 0.001*np.array([0.2, 0.2, 0.1])
 xd = mud
 ud = np.array([5.0, 0.0])
 max_step = 5.0  # Allowed step for control
-mu0 = np.array([0, 0, 0.1])
-Sigma0 = np.array([0.2, 0.2, 0.1])
+mu0 = np.array([0, 0, np.pi/6])
+Sigma0 = np.array([0.2, 0.2, 0.05])
 x0 = mu0
 Sigma_w = 5*np.array([0.01, 0.01, 0.01])
 max_iters = 30
 max_ko = 5000
 ko_gain = 2.0/(0.8*max_iters)
+ko_start = 500
 
 def singleTrial(M=100, plot=False, buf=0.0, return_ddp=False):
     SphericalObstacle.buf = buf
     us0 = np.tile(ud, (N, 1))
-    cost = LQRObstacleCost(N, Q, R, Qf, xd, ko=500, obstacles=obs_list, ud=ud)
+    cost = LQRObstacleCost(N, Q, R, Qf, xd, ko=ko_start, obstacles=obs_list, ud=ud)
     ddp = Ddp(dynamics, cost, us0, x0, dt, max_step,
               integrator=integrator)
     V = ddp.V
     print("V0: ", V)
     for i in range(max_iters):
-        cost.ko = np.tanh(i*ko_gain)*(max_ko-500) + 500
+        cost.ko = np.tanh(i*ko_gain)*(max_ko-ko_start) + ko_start
         ddp.update_dynamics(ddp.us, ddp.xs)
         ddp.iterate()
         V = ddp.V
@@ -144,7 +145,7 @@ if __name__ == "__main__":
     Ncollisions_buf = []
     buf_array = np.linspace(0, 0.2, 5)
     delta_Js_frame = pd.DataFrame()
-    M = 500 # Number of samples per trial
+    M = 100 # Number of samples per trial
     Mtrials = 20 #Number of trials other than nominal one
     obs_params = sampleObsParams(Mtrials, obs_mu, obs_cov)
     xds = np.random.multivariate_normal(mud, np.diag(np.square(Sigmad)), Mtrials)
