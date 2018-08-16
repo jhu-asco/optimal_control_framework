@@ -41,9 +41,11 @@ Qf = 30*np.eye(dynamics.n)
 Qf[-1, -1] = 0
 ts = np.arange(N + 1) * dt
 # Obstacles
-obs_mu = np.array([[3,2,1.4],
-                   [6,5,1.4]])
-obs_cov = np.square(np.tile(np.array([0.2, 0.2, 0.5]), (2, 1)))
+obs_mu = np.array([[4,4.5,1.4]])
+obs_cov = np.square(np.tile(np.array([0.2, 0.2, 0.5]), (1, 1)))
+#obs_mu = np.array([[3,2,1.4],
+#                   [6,5,1.4]])
+#obs_cov = np.square(np.tile(np.array([0.2, 0.2, 0.5]), (2, 1)))
 obs_list = createObstacleList(obs_mu)
 # Desired terminal condition
 mud = np.array([8.0, 8.0, 0])
@@ -62,13 +64,13 @@ ko_gain = 2.0/(0.8*max_iters)
 def singleTrial(M=100, plot=False, buf=0.0, return_ddp=False):
     SphericalObstacle.buf = buf
     us0 = np.tile(ud, (N, 1))
-    cost = LQRObstacleCost(N, Q, R, Qf, xd, ko=0, obstacles=obs_list, ud=ud)
+    cost = LQRObstacleCost(N, Q, R, Qf, xd, ko=500, obstacles=obs_list, ud=ud)
     ddp = Ddp(dynamics, cost, us0, x0, dt, max_step,
               integrator=integrator)
     V = ddp.V
     print("V0: ", V)
     for i in range(max_iters):
-        cost.ko = np.tanh(i*ko_gain)*max_ko
+        cost.ko = np.tanh(i*ko_gain)*(max_ko-500) + 500
         ddp.update_dynamics(ddp.us, ddp.xs)
         ddp.iterate()
         V = ddp.V

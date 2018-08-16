@@ -24,16 +24,17 @@ Qf[-1, -1] = 0
 ts = np.arange(N + 1) * dt
 # Obstacles
 ko = 1000  # Obstacle gain
-obs1 = SphericalObstacle(np.array([3, 2]), 1.4)
-obs2 = SphericalObstacle(np.array([6, 5]), 1.4)
-obs_list = [obs1, obs2]
+SphericalObstacle.buf = 0.5
+obs1 = SphericalObstacle(np.array([4, 4]), 1.4)
+#obs2 = SphericalObstacle(np.array([6, 5]), 1.4)
+obs_list = [obs1]
 # Desired terminal condition
 xd = np.array([8.0, 8.0, 0.0])
 ud = np.array([5.0, 0.0])
 cost = LQRObstacleCost(N, Q, R, Qf, xd, ko=ko, obstacles=obs_list, ud=ud)
 max_step = 5.0  # Allowed step for control
 
-x0 = np.array([0, 0, 0])
+x0 = np.array([0, 0, np.pi/6])
 us0 = np.zeros([N, dynamics.m])
 ddp = Ddp(dynamics, cost, us0, x0, dt, max_step,
           integrator=integrator)
